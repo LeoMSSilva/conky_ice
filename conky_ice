@@ -1,0 +1,116 @@
+# Base settings
+update_interval 1
+total_run_times 0
+net_avg_samples 1
+cpu_avg_samples 1
+
+imlib_cache_size 0
+double_buffer yes
+no_buffers yes
+
+format_human_readable
+
+# Text settings 
+
+use_xft yes
+xftfont ubuntu:size=8
+override_utf8_locale yes
+text_buffer_size 2048
+
+# Window settings
+
+own_window_class Conky
+own_window yes
+own_window_argb_visual yes
+own_window_argb_value 76
+own_window_transparent no
+own_window_hints undecorated,below,sticky,skip_taskbar
+
+alignment top_right
+gap_x 16
+gap_y 40
+minimum_size 190 200
+maximum_width 240
+default_bar_size 220 8
+
+# Graphics settings 
+
+draw_shades no
+default_color fcfcfc
+
+color0 037c8c
+color1 04668c
+color2 014b8c
+color3 00338c
+
+lua_load ./graphs.lua
+lua_draw_hook_pre main_draw_graphs
+
+own_window_colour 000000
+
+TEXT
+${font ubuntu:style=Bold:size=8}Computer: ${exec echo "$(hostname)"} ${alignr}Up: ${uptime}
+User: ${exec echo "$(whoami)"}
+#
+# SYSTEM
+#
+Distro:${alignr}${exec lsb_release -d | awk '/Description:/ {print $2,$3,$4}'} - ${exec inxi -c 0 -Sx | awk -F': ' '/Kernel/ {print $6}'}
+Kernel:${alignr}${exec inxi -c 0 -Sx | awk -F': ' '/Kernel/ {print $3}'}
+Motherboard: ${alignr}${exec echo "$(cat /sys/class/dmi/id/board_vendor) - $(cat /sys/class/dmi/id/board_name)"}
+Processor: ${alignr}${exec lscpu | grep "model" | awk -F: '{gsub(/^ *| *$/, "", $2); print $2}'}${voffset -4}
+#
+${voffset 8}${color}$stippled_hr${voffset 8}
+#
+# NETWORK
+#
+${image ./grid.png -p 8,104}
+${voffset 56}
+#run to find out the interface name: nmcli device status | awk '/ethernet/ && /connected/ {print $1} /wifi/ {print $1}'
+${goto 64}Up: ${color0}${upspeed wlx20e0170d21ed} ${goto 140}${color}Down: ${color3}${downspeed wlx20e0170d21ed}
+${color}${voffset -4}
+Local: ${alignr}${exec hostname -I | awk '{print $1}'}
+Public: ${alignr}${execi 10000 hostname -I | awk '{print $5}'}
+#
+# HD read/write
+#
+${voffset 8}${color}$stippled_hr${voffset 8}
+#
+Disk
+#HD used
+Root: ${fs_used_perc /}% of ${fs_size /} ${alignr}${fs_bar 4,100}
+Home: ${fs_used_perc /home}% of ${fs_size /home} ${alignr}${fs_bar 4,100 /home}
+HDr: ${goto 88}${color0}${diskio_read}${goto 104}${color}HDw: ${alignr}${color3}${diskio_write}
+${color}${diskiograph 32,240 037c8c 00338c -t}${voffset -8}
+#
+${voffset 8}${color}$stippled_hr${voffset 8}
+#
+# RAM/SWAP
+#
+RAM: $mem/$memmax ${alignr}$memperc% ${membar 4,100}
+SWAP:$swap/$swapmax ${alignr}$swapperc% ${swapbar 4,100}
+#
+${voffset 8}${color}$stippled_hr${voffset 8}
+#
+#CPU
+#
+${image ./grid.png -p 8,432}
+${voffset 56}
+${color0}C1: ${freq_g 1} G ${cpu cpu1}% ${alignr}${color1}C2: ${freq_g 2} G ${cpu cpu2}%
+${color2}C3: ${freq_g 3} G ${cpu cpu3}% ${alignr}${color3}C4: ${freq_g 4} G ${cpu cpu4}%
+${goto 104}${voffset -20}${color}${execi 1 echo $(($(cat /sys/class/hwmon/hwmon0/temp1_input)/1000))°C}
+#
+#${voffset 8}${color}$stippled_hr${voffset 8}
+#
+#${color 80a8a4}GPU%
+#${execbar nvidia-settings -q GPUUtilization | awk '/Attribute/ {print substr($4,10,2)}'}
+#
+${voffset 8}${color}$stippled_hr${voffset 8}
+#
+TOP PROCESSES${goto 128}PID${goto 164}CPU%${goto 208}MEM%
+${top name 1} ${goto 120} ${top pid 1}${goto 168}${top cpu 1}${goto 216}${top mem 1}
+${top name 2} ${goto 120} ${top pid 2}${goto 168}${top cpu 2}${goto 216}${top mem 2}
+${top name 3} ${goto 120} ${top pid 3}${goto 168}${top cpu 3}${goto 216}${top mem 3}
+${top name 4} ${goto 120} ${top pid 4}${goto 168}${top cpu 4}${goto 216}${top mem 4}
+${top name 5} ${goto 120} ${top pid 5}${goto 168}${top cpu 5}${goto 216}${top mem 5}
+${top name 6} ${goto 120} ${top pid 6}${goto 168}${top cpu 5}${goto 216}${top mem 6}
+${top name 7} ${goto 120} ${top pid 7}${goto 168}${top cpu 5}${goto 216}${top mem 7}
