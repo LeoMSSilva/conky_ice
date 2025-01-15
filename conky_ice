@@ -57,7 +57,7 @@ User: ${exec echo "$(whoami)"}
 Distro:${alignr}${exec lsb_release -d | awk '/Description:/ {print $2,$3,$4}'} - ${exec inxi -c 0 -Sx | awk -F': ' '/Kernel/ {print $6}'}
 Kernel:${alignr}${exec inxi -c 0 -Sx | awk -F': ' '/Kernel/ {print $3}'}
 Motherboard: ${alignr}${exec echo "$(cat /sys/class/dmi/id/board_vendor) - $(cat /sys/class/dmi/id/board_name)"}
-Processor: ${alignr}${exec lscpu | grep "model" | awk -F: '{gsub(/^ *| *$/, "", $2); print $2}'}${voffset -4}
+Processor: ${alignr}${exec lscpu | grep "model" | awk -F: '{gsub(/^ *| *$/, "", $2); print $2}' | sed -e 's/CPU @/-/' -e 's/\(Intel\|AMD\)(R)//g'}${voffset -4}
 #
 ${voffset 8}${color}$stippled_hr${voffset 8}
 #
