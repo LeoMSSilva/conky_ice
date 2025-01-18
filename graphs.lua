@@ -1,9 +1,12 @@
 -- Defining the colors
-color0 = 0x037c8c
-color1 = 0x04668c
-color2 = 0x014b8c
-color3 = 0x00338c
-
+color0 = 0x01598C
+color1 = 0x358C01
+color2 = 0x8C5101
+color3 = 0x89018C
+color4 = 0x132A37
+color5 = 0xB1FF82
+color6 = 0xFFCA82
+color7 = 0xFD82FF
 require 'cairo'
 
 -- Cache to store the network interface name
@@ -45,12 +48,12 @@ end
 -- Function to define graph parameters
 function initialize_all_graph_configs()
     graphs_config = {
-        generate_graph_config("cpu1", 0x000000),
-        generate_graph_config("cpu2", 0x00ffff),
-        generate_graph_config("cpu3", 0xffff00),
-        generate_graph_config("cpu4", 0xff00ff),
-        generate_graph_config("upspeedf", 0x00ff00, 40, 20),
-        generate_graph_config("downspeedf", 0xff0000, 40, 20)
+        generate_graph_config("cpu1", color0),
+        generate_graph_config("cpu2", color1),
+        generate_graph_config("cpu3", color2),
+        generate_graph_config("cpu4", color3),
+        generate_graph_config("upspeedf", color0, 40, 20),
+        generate_graph_config("downspeedf", color1, 40, 20)
     }
 end
 

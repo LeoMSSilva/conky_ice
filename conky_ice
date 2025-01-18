@@ -38,10 +38,14 @@ default_bar_size 220 8
 draw_shades no
 default_color fcfcfc
 
-color0 037c8c
-color1 04668c
-color2 014b8c
-color3 00338c
+color0 01598C
+color1 358C01
+color2 8C5101
+color3 89018C
+color4 132A37
+color5 B1FF82
+color6 FFCA82
+color7 FD82FF
 
 lua_load ./graphs.lua
 lua_draw_hook_pre main_draw_graphs
@@ -66,7 +70,7 @@ ${voffset 8}${color}$stippled_hr${voffset 8}
 ${image ./grid.png -p 8,104}
 ${voffset 56}
 #run to find out the interface name: nmcli device status | awk '/ethernet/ && /connected/ {print $1} /wifi/ {print $1}'
-${goto 64}Up: ${color0}${upspeed wlx20e0170d21ed} ${goto 140}${color}Down: ${color3}${downspeed wlx20e0170d21ed}
+${goto 64}Up: ${color0}${upspeed wlx20e0170d21ed} ${goto 140}${color}Down: ${color1}${downspeed wlx20e0170d21ed}
 ${color}${voffset -4}
 Local: ${alignr}${exec hostname -I | awk '{print $1}'}
 Public: ${alignr}${execi 10000 hostname -I | awk '{print $5}'}
@@ -79,8 +83,8 @@ Disk
 #HD used
 Root: ${fs_used_perc /}% of ${fs_size /} ${alignr}${fs_bar 4,100}
 Home: ${fs_used_perc /home}% of ${fs_size /home} ${alignr}${fs_bar 4,100 /home}
-HDr: ${goto 88}${color0}${diskio_read}${goto 104}${color}HDw: ${alignr}${color3}${diskio_write}
-${color}${diskiograph 32,240 037c8c 00338c -t}${voffset -8}
+HDr: ${goto 88}${color0}${diskio_read}${goto 104}${color}HDw: ${alignr}${color1}${diskio_write}
+${color}${diskiograph 32,240 01598C 358C01 -t}${voffset -8}
 #
 ${voffset 8}${color}$stippled_hr${voffset 8}
 #
