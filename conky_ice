@@ -99,9 +99,11 @@ ${voffset 8}${color}$stippled_hr${voffset 8}
 #
 ${image ./grid.png -p 8,432}
 ${voffset 56}
-${color0}C1: ${freq_g 1} G ${cpu cpu1}% ${alignr}${color1}C2: ${freq_g 2} G ${cpu cpu2}%
-${color2}C3: ${freq_g 3} G ${cpu cpu3}% ${alignr}${color3}C4: ${freq_g 4} G ${cpu cpu4}%
-${goto 104}${voffset -20}${color}${execi 1 echo $(($(cat /sys/class/hwmon/hwmon0/temp1_input)/1000))°C}
+${if_match ${exec nproc} >= 2}${color0}C1: ${freq_g 1} G ${cpu cpu1}% ${alignr}${color1}C2: ${freq_g 2} G ${cpu cpu2}%${voffset -13}${else}${endif}
+${voffset 13}${if_match ${exec nproc} >= 4}${color2}C3: ${freq_g 3} G ${cpu cpu3}% ${alignr}${color3}C4: ${freq_g 4} G ${cpu cpu4}%${voffset -19}${else}${voffset -27}${endif}
+${voffset 19}${if_match ${exec nproc} >= 6}${color4}C5: ${freq_g 5} G ${cpu cpu5}% ${alignr}${color5}C6: ${freq_g 6}G ${cpu cpu6}%${voffset -24}${else}${voffset -32}${endif}
+${voffset 24}${if_match ${exec nproc} >= 8}${color6}C7: ${freq_g 7} G ${cpu cpu7}% ${alignr}${color7}C8: ${freq_g 8} G ${cpu cpu8}%${voffset -32}${else}${voffset -36}${endif}
+${goto 104}${color}${execi 1 echo $(($(cat /sys/class/hwmon/hwmon0/temp1_input)/1000))°C}
 #
 #${voffset 8}${color}$stippled_hr${voffset 8}
 #

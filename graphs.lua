@@ -1,12 +1,14 @@
 -- Defining the colors
-color0 = 0x01598C
-color1 = 0x358C01
-color2 = 0x8C5101
-color3 = 0x89018C
-color4 = 0x132A37
-color5 = 0xB1FF82
-color6 = 0xFFCA82
-color7 = 0xFD82FF
+colors = {
+    0x01598C,
+    0x358C01,
+    0x8C5101,
+    0x89018C,
+    0x132A37,
+    0xB1FF82,
+    0xFFCA82,
+    0xFD82FF
+}
 require 'cairo'
 
 -- Cache to store the network interface name
@@ -24,15 +26,23 @@ function get_network_interface_name()
     return network_interface_cache
 end
 
+-- Function to get the number of CPUs
+function get_num_cpus()
+    local handle = io.popen("nproc")
+    local num_cpus = handle:read("*a"):match("^%s*(%d+)%s*$")
+    handle:close()
+    return tonumber(num_cpus) or 1
+end
+
 -- Function to create graph configurations
-local function generate_graph_config(name, color, max, height)
+local function generate_graph_config(name, color)
     local is_cpu = name:match("^cpu") ~= nil
     return {
         name = is_cpu and "cpu" or name,
         arg = is_cpu and name or get_network_interface_name(),
-        max = is_cpu and 100 or max,
-        width = 220,
-        height = is_cpu and 75 or height,
+        max = 100,
+        width = 232,
+        height = 80,
         nb_values = is_cpu and 100 or 76,
         autoscale = not is_cpu,
         x = 16,
@@ -47,14 +57,14 @@ end
 
 -- Function to define graph parameters
 function initialize_all_graph_configs()
-    graphs_config = {
-        generate_graph_config("cpu1", color0),
-        generate_graph_config("cpu2", color1),
-        generate_graph_config("cpu3", color2),
-        generate_graph_config("cpu4", color3),
-        generate_graph_config("upspeedf", color0, 40, 20),
-        generate_graph_config("downspeedf", color1, 40, 20)
-    }
+    -- Adds the network graphs
+    table.insert(graphs_config, generate_graph_config("upspeedf", colors[1]))
+    table.insert(graphs_config, generate_graph_config("downspeedf", colors[2]))
+
+    -- Dynamically adds CPU graphs
+    for i = 1, get_num_cpus() do
+        table.insert(graphs_config, generate_graph_config("cpu" .. i, colors[i]))
+    end
 end
 
 -- Function to check graph parameters
