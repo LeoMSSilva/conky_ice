@@ -29,7 +29,7 @@ own_window_hints undecorated,below,sticky,skip_taskbar
 alignment top_right
 gap_x 16
 gap_y 40
-minimum_size 190 200
+minimum_size 800
 maximum_width 240
 default_bar_size 220 8
 
@@ -67,8 +67,7 @@ ${voffset 8}${color}$stippled_hr${voffset 8}
 #
 # NETWORK
 #
-${image ./grid.png -p 8,104}
-${voffset 56}
+${voffset 72}
 #run to find out the interface name: nmcli device status | awk '/ethernet/ && /connected/ {print $1} /wifi/ {print $1}'
 ${goto 64}Up: ${color0}${upspeed wlx20e0170d21ed} ${goto 140}${color}Down: ${color1}${downspeed wlx20e0170d21ed}
 ${color}${voffset -4}
@@ -97,8 +96,7 @@ ${voffset 8}${color}$stippled_hr${voffset 8}
 #
 #CPU
 #
-${image ./grid.png -p 8,432}
-${voffset 56}
+${voffset 72}
 ${if_match ${exec nproc} >= 2}${color0}C1: ${freq_g 1} G ${cpu cpu1}% ${alignr}${color1}C2: ${freq_g 2} G ${cpu cpu2}%${voffset -13}${else}${endif}
 ${voffset 13}${if_match ${exec nproc} >= 4}${color2}C3: ${freq_g 3} G ${cpu cpu3}% ${alignr}${color3}C4: ${freq_g 4} G ${cpu cpu4}%${voffset -19}${else}${voffset -27}${endif}
 ${voffset 19}${if_match ${exec nproc} >= 6}${color4}C5: ${freq_g 5} G ${cpu cpu5}% ${alignr}${color5}C6: ${freq_g 6}G ${cpu cpu6}%${voffset -24}${else}${voffset -32}${endif}

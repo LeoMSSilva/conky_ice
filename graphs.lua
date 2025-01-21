@@ -43,15 +43,16 @@ local function generate_graph_config(name, color)
         max = 100,
         width = 232,
         height = 80,
-        nb_values = is_cpu and 100 or 76,
+        nb_values = 24,
         autoscale = not is_cpu,
-        x = 16,
-        y = is_cpu and 512 or 180,
+        x = 8,
+        y = is_cpu and 520 or 184,
         foreground_border_size = 1,
         foreground_border_color = {{0, color, 1}},
         background = false,
         foreground = false,
         inverse = true,
+        opacity = (name == "upspeedf" or name == "cpu1") and 1 or 0
     }
 end
 
@@ -80,82 +81,38 @@ function validate_all_graph_config(config)
     return 0
 end
 
-function conky_main_draw_graphs()
-    -- Checks if the Conky window is open
-    if conky_window == nil then return end
-    
-    -- Create drawing surface with window dimensions
-    local w, h = conky_window.width, conky_window.height
-    local cs = cairo_xlib_surface_create(conky_window.display, conky_window.drawable, conky_window.visual, w, h)
-    cr = cairo_create(cs)
+-- Function to draw the grid lines
+function draw_grid(cr, graph_config, scale_x, scale_y)
+    -- Convert the background color to RGBA and adjust opacity
+    cairo_set_line_width(cr, 0.5)
+    local r, g, b, a = convert_rgb_to_rgba(graph_config.background_border_color[1])
+    local grid_opacity = a * 0.1
+    cairo_set_source_rgba(cr, r, g, b, grid_opacity)
 
-    -- Number of updates
-    updates = tonumber(conky_parse('${updates}'))
-    updates_gap = 5
-    
-    -- First execution to configure the graphs
-    if updates == 1 then
-        initialize_all_graph_configs()  
-        valid_config_status = 0
-    
-        -- Initialize each graph
-        for _, graph_config in pairs(graphs_config) do
-            graph_config.width = graph_config.width or 100
-            graph_config.nb_values = graph_config.nb_values or graph_config.width
-            graph_config.values = {}
-            graph_config.beg = graph_config.nb_values
-            for j = 1, graph_config.nb_values do
-                graph_config.values[j] = 0
-            end
-            graph_config.flag_init = true    
-            valid_config_status = valid_config_status + validate_all_graph_config(graph_config)
-        end
+    -- Drawing vertical lines
+    for i = 1, graph_config.nb_values - 1 do
+        cairo_move_to(cr, i * scale_x, 0)
+        cairo_line_to(cr, i * scale_x, graph_config.height)
+        cairo_stroke(cr)
     end
-
-    -- If there's an error, abort execution
-    if valid_config_status > 0 then
-        print("ERROR: Check the graph_setting table")
-        return
+    
+    -- Drawing horizontal lines
+    local num_horizontal_lines = 8
+    for i = 1, num_horizontal_lines do
+        local y_position = i * graph_config.height / num_horizontal_lines
+        cairo_move_to(cr, 0, y_position)
+        cairo_line_to(cr, graph_config.width, y_position)
+        cairo_stroke(cr)
     end
+end
 
-    -- Draw graphs after update interval
-    if updates > updates_gap then
-        for _, graph_config in pairs(graphs_config) do
-            -- Check if the graph should be drawn
-            if graph_config.draw_me == true then graph_config.draw_me = nil end
-            if (graph_config.draw_me == nil or conky_parse(tostring(graph_config.draw_me)) == "1") then
-                graph_config.automax = 0
-                local nb_values = graph_config.nb_values
-                -- Update the graph values
-                for j = 1, nb_values do
-                    graph_config.values[j] = graph_config.values[j + 1] or 0
-                    if j == nb_values then
-                        local value = graph_config.name == "" and graph_config.arg or tonumber(conky_parse('${' .. graph_config.name .. " " .. graph_config.arg .. '}'))
-                        graph_config.values[nb_values] = value
-                    end
-                    graph_config.automax = math.max(graph_config.automax, graph_config.values[j])
-                    if graph_config.automax == 0 then graph_config.automax = 1 end
-                end
-                render_graph(graph_config)
-            end
-        end
-    end
-
-    -- Clean up Cairo resources
-    cairo_destroy(cr)
-    cairo_surface_destroy(cs)
-    updates = nil
-    updates_gap = nil
+-- Converts RGB values to RGBA
+function convert_rgb_to_rgba(colour)
+    return ((colour[2] / 0x10000) % 0x100) / 255., ((colour[2] / 0x100) % 0x100) / 255., (colour[2] % 0x100) / 255., colour[3]
 end
 
 -- Main function to render the graph
 function render_graph(graph_config)
-
-    -- Converts RGB values to RGBA
-    local function convert_rgb_to_rgba(colour)
-        return ((colour[2] / 0x10000) % 0x100) / 255., ((colour[2] / 0x100) % 0x100) / 255., (colour[2] % 0x100) / 255., colour[3]
-    end
-
     -- Defines the gradient orientation for the background and border of the graph
     local function linear_orientation(o, w, h)
         local p
@@ -194,11 +151,11 @@ function render_graph(graph_config)
     -- Set default values for properties
     if graph_config.height == nil then graph_config.height = 20 end
     if graph_config.background == nil then graph_config.background = true end
-    if graph_config.background_border_size == nil then graph_config.background_border_size = 0 end
+    if graph_config.background_border_size == nil then graph_config.background_border_size = 0.4 end
     if graph_config.x == nil then graph_config.x = graph_config.background_border_size end
     if graph_config.y == nil then graph_config.y = conky_window.height - graph_config.background_border_size end
     if graph_config.background_color == nil then graph_config.background_color = {{0, 0x000000, .5}, {1, 0xFFFFFF, .5}} end
-    if graph_config.background_border_color == nil then graph_config.background_border_color = {{1, 0xFFFFFF, 1}} end
+    if graph_config.background_border_color == nil then graph_config.background_border_color = {{1, 0xFFFFFF, graph_config.opacity}} end
     if graph_config.foreground == nil then graph_config.foreground = true end
     if graph_config.fg_colour == nil then graph_config.fg_colour = {{0, 0x00FFFF, 1}, {1, 0x0000FF, 1}} end
     if graph_config.foreground_border_size == nil then graph_config.foreground_border_size = 0 end
@@ -367,6 +324,77 @@ function render_graph(graph_config)
         cairo_stroke(cr)
         cairo_pattern_destroy(pat)
     end
+    
+    -- Render the grid
+    draw_grid(cr, graph_config, scale_x, scale_y)
 
     cairo_restore(cr)
+end
+
+function conky_main_draw_graphs()
+    -- Checks if the Conky window is open
+    if conky_window == nil then return end
+    
+    -- Create drawing surface with window dimensions
+    local w, h = conky_window.width, conky_window.height
+    local cs = cairo_xlib_surface_create(conky_window.display, conky_window.drawable, conky_window.visual, w, h)
+    cr = cairo_create(cs)
+
+    -- Number of updates
+    updates = tonumber(conky_parse('${updates}'))
+    updates_gap = 5
+    
+    -- First execution to configure the graphs
+    if updates == 1 then
+        initialize_all_graph_configs()  
+        valid_config_status = 0
+    
+        -- Initialize each graph
+        for _, graph_config in pairs(graphs_config) do
+            graph_config.width = graph_config.width or 100
+            graph_config.nb_values = graph_config.nb_values or graph_config.width
+            graph_config.values = {}
+            graph_config.beg = graph_config.nb_values
+            for j = 1, graph_config.nb_values do
+                graph_config.values[j] = 0
+            end
+            graph_config.flag_init = true    
+            valid_config_status = valid_config_status + validate_all_graph_config(graph_config)
+        end
+    end
+
+    -- If there's an error, abort execution
+    if valid_config_status > 0 then
+        print("ERROR: Check the graph_setting table")
+        return
+    end
+
+    -- Draw graphs after update interval
+    if updates > updates_gap then
+        for _, graph_config in pairs(graphs_config) do
+            -- Check if the graph should be drawn
+            if graph_config.draw_me == true then graph_config.draw_me = nil end
+            if (graph_config.draw_me == nil or conky_parse(tostring(graph_config.draw_me)) == "1") then
+                graph_config.automax = 0
+                local nb_values = graph_config.nb_values
+                -- Update the graph values
+                for j = 1, nb_values do
+                    graph_config.values[j] = graph_config.values[j + 1] or 0
+                    if j == nb_values then
+                        local value = graph_config.name == "" and graph_config.arg or tonumber(conky_parse('${' .. graph_config.name .. " " .. graph_config.arg .. '}'))
+                        graph_config.values[nb_values] = value
+                    end
+                    graph_config.automax = math.max(graph_config.automax, graph_config.values[j])
+                    if graph_config.automax == 0 then graph_config.automax = 1 end
+                end
+                render_graph(graph_config)
+            end
+        end
+    end
+
+    -- Clean up Cairo resources
+    cairo_destroy(cr)
+    cairo_surface_destroy(cs)
+    updates = nil
+    updates_gap = nil
 end
